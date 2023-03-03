@@ -33,8 +33,8 @@ class MCES:
                for action in range(self.n_actions):
                     self.R_table[state][action] = []
 
-     def get_prime_action_by_Q(self, Q_table, state):
-          action_list = Q_table[state]
+     def get_prime_action_by_Q(self, state):
+          action_list = self.Q_table[state]
           prime_action = action_list.index(max(action_list))
           return prime_action
 
@@ -77,12 +77,14 @@ class MCES:
      
      def run(self):
           self.init_table()
-          success_episode=[]       
+          success_episode=[]
+          success_episode_index=[]       
           for epo in range(self.num_episode):                                   
                state_list, action_list, return_list, result = self.generate_episode()
                if (result == True):
-                    print("Successful in No.", str(epo),"episode")
+                    #print("Successful in No.", str(epo+1),"episode")
                     success_episode.append(action_list)
+                    success_episode_index.append((epo+1))
                     #print("Total step: ", len(action_list))
                
                V_table = create_x_by_y_table(self.n_states, self.n_actions)
@@ -93,20 +95,21 @@ class MCES:
                          self.R_table[state][action].append(return_list[i])
                          Q = np.mean(self.R_table[state][action])                           
                          self.Q_table[state][action] = Q
-                         prime_action = self.get_prime_action_by_Q(self.Q_table, state)               
+                         prime_action = self.get_prime_action_by_Q(state)               
                          self.epsilon_greedy_policy(prime_action,state)
           if (len(success_episode)==0):
                print("Trainig is not enough, no successful episode, please give a larger num_episode")
           else:
                self.training_enough = True
-               print("Successful episode num:", len(success_episode), "in total", self.num_episode, "episodes")
+               print("Total Successful episode count", len(success_episode), "in", self.num_episode, "episodes")
+               print("First success episode No.", min(success_episode_index))
                self.shortest_route = min(success_episode, key=len)
                print("shortest route with", len(self.shortest_route),"steps",[self.action_map[a] for a in self.shortest_route])
      
      def render_action_step(self):
           if not self.training_enough:
                return
-          print("Start showing the process:")
+          print("Start showing the shortest path:")
           self.env.reset()
           self.env.render()
           for each_step in self.shortest_route:
@@ -136,9 +139,10 @@ class MCES:
           
           print("Policy table after training: ")
           print(policy_table)
+          
 
 if __name__ == '__main__': 
-     m = MCES(num_episode=10000, gamma=0.95, epsilon=0.1)
+     m = MCES(num_episode=1000, gamma=0.95, epsilon=0.1)
      m.run()
      m.render_action_step()
      m.render_policy_table()
