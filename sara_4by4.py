@@ -1,9 +1,9 @@
 import numpy as np
 from env4by4 import adjustEnv
 
-class QLEARNING:
+class SARA:
     """
-    Init the Q-learning class with input 
+    Init the SARSA class with input 
     """
     def __init__(self, num_episode=1000, gamma=0.95, epsilon=0.1, learning_rate=0.1):
         self.env = adjustEnv()
@@ -55,25 +55,28 @@ class QLEARNING:
         for epo in range(self.num_episode):
             # Initialize state to start position
             state = self.env.reset()
+            # Choose action from state using policy derived from Q (epsilon-greedy)
+            action = self.epsilon_greedy_policy(state)
             # Create the action list for each episode
             action_list = []
             # Update this terminated to decide whether this episode ends 
             terminated = False
             # Loop for each step of episode
             while not terminated:
-                # Choose action from state using policy derived from Q (epsilon-greedy)
-                action = self.epsilon_greedy_policy(state)
+                # Add the first action by epsilon greedy policy to the action list
+                action_list.append(action)
                 # Take action, receive reward and observe the next state
                 next_state, reward, terminated, _ = self.env.step(action)
-                # That is the difference between SARSA & Q-learning
-                # Q-learning use the max Q value of new state as the Q prime
-                Q_prime = np.max(self.Q_table[next_state])
+                # Choose next action from next state using policy derived from Q (epsilon-greedy)
+                next_action = self.epsilon_greedy_policy(next_state)
+                # Here is the difference between SARSA & Q-learning
+                # SARSA use the Q value of next state's next action as the Q prime
+                Q_prime = self.Q_table[next_state][next_action]
                 # Update the Q table with this Q prime
                 self.Q_table[state][action] += self.learning_rate * (reward + self.gamma * Q_prime - self.Q_table[state][action])
                 # Update the state
                 state = next_state
-                # Add each action in this episode into the action list
-                action_list.append(action)
+                action = next_action
                 # Check whether it reaches the goal state
                 if (next_state == self.n_states-1):
                     success_episode_index.append((epo+1))
@@ -134,7 +137,7 @@ class QLEARNING:
         return
 
 if __name__ == '__main__': 
-    m = QLEARNING(num_episode=100, gamma=0.95, epsilon=0.1, learning_rate=0.1)
+    m = SARA(num_episode=100, gamma=0.95, epsilon=0.1, learning_rate=0.1)
     m.run()
     m.render_policy_table()
     m.render_first_shortest_episode()

@@ -23,17 +23,24 @@ class SARA:
                self.P_table[state] = [1/self.n_actions] * self.n_actions
                self.Q_table[state] = [0] * self.n_actions
      
-     def get_prime_action_by_Q(self, state):
-          action_list = self.Q_table[state]
-          prime_action = action_list.index(max(action_list))
-          return prime_action
-     
+     def get_optimal_action(self, state):
+          q_values = self.Q_table[state]
+          optimal_action = np.argmax(q_values)
+          return optimal_action
+
      def epsilon_greedy_behavior(self, state):
           if np.random.uniform(0, 1) < self.epsilon:
                action = self.env.action_space.sample()
           else:
-               action = self.get_prime_action_by_Q(state)
+               action = self.get_optimal_action(state)
           return action
+          
+     def update_ptable_by_epsilon_greedy(self, prime_action, state):
+          for action in range(self.n_actions):
+               if action==prime_action:
+                    self.P_table[state][action] = 1 - self.epsilon + self.epsilon / self.n_actions
+               else:
+                    self.P_table[state][action] = self.epsilon / self.n_actions     
      
      def run(self):
           self.init_table()
@@ -43,18 +50,21 @@ class SARA:
           for epo in range(self.num_episode):
                self.epo_result = False
                state = self.env.reset()
-               action = self.epsilon_greedy_behavior(state)
+               action = self.env.action_space.sample()
                action_list = []
                action_list.append(action)
                terminated = False
                while not terminated:
                     next_state, reward, terminated, _ = self.env.step(action)
-                    next_action = self.epsilon_greedy_behavior(next_state)
+                    next_action = self.env.action_space.sample()
                     Q_prime = self.Q_table[next_state][next_action]
                     self.Q_table[state][action] += self.learning_rate * (reward + self.gamma * Q_prime - self.Q_table[state][action])
+                    prime_action = self.get_optimal_action(state)
+                    self.update_ptable_by_epsilon_greedy(prime_action, state)
                     state = next_state
                     action = next_action
                     action_list.append(next_action)
+                    
                     if (state == self.n_states-1):
                          self.epo_result = True
                          success_episode_index.append((epo+1))
@@ -67,13 +77,14 @@ class SARA:
                self.training_enough=True
                print("Total successful episode count", len(success_episode_index), "in", self.num_episode, "episodes")
                print("First success episode No.", min(success_episode_index))                   
-          
+          return self.P_table
+     
      def render_policy_table(self):
           if not self.training_enough:
                return
           optimal_policy=[]     
           for state in range(self.n_states):
-               optimal_policy.append(self.get_prime_action_by_Q(state))
+               optimal_policy.append(self.get_optimal_action(state))
           
           directions = ["left ", "down ", "right", "up   "]
           policy_table = ""
