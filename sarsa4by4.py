@@ -1,12 +1,12 @@
 import numpy as np
-from env4by4 import adjustEnv
+from env4by4 import Env4by4
 
 class SARA:
     """
     Init the SARSA class with input 
     """
     def __init__(self, num_episode=1000, gamma=0.95, epsilon=0.1, learning_rate=0.1):
-        self.env = adjustEnv()
+        self.env = Env4by4()
         self.num_row = 4
         self.num_colomn = 4
         self.n_states = self.env.observation_space.n

@@ -1,5 +1,5 @@
 import numpy as np
-from env4by4 import adjustEnv
+from env4by4 import Env4by4
 
 def create_x_by_y_table(x,y):
      output_list = []
@@ -10,7 +10,7 @@ def create_x_by_y_table(x,y):
 
 class MCES:
      def __init__(self, num_episode, gamma, epsilon):
-          self.env = adjustEnv()
+          self.env = Env4by4()
           self.num_row = 4
           self.num_colomn = 4
           self.n_states = self.env.observation_space.n

@@ -1,6 +1,6 @@
 import gym
 
-def adjustEnv():
+def Env4by4():
     # Import frozen lake model from OpenAI gym and adjust the reward
     env = gym.make('FrozenLake-v1', map_name='4x4', is_slippery=False)
     reward_table = env.env.P
