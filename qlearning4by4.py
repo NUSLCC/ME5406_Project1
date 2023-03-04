@@ -134,7 +134,7 @@ class QLEARNING:
         return
 
 if __name__ == '__main__': 
-    m = QLEARNING(num_episode=100, gamma=0.95, epsilon=0.1, learning_rate=0.1)
+    m = QLEARNING(num_episode=1000, gamma=0.95, epsilon=0.1, learning_rate=0.1)
     m.run()
-    m.render_policy_table()
-    m.render_first_shortest_episode()
+    #m.render_policy_table()
+    #m.render_first_shortest_episode()
