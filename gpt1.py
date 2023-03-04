@@ -1,8 +1,9 @@
 import numpy as np
-from env4by4 import adjustEnv
+import gym
+
 class SARA:
     def __init__(self, num_episode, gamma, epsilon, learning_rate):
-        self.env = adjustEnv()
+        self.env = env = gym.make('FrozenLake-v1', map_name='8x8', is_slippery=False)
         self.num_row = 4
         self.num_colomn = 4
         self.n_states = self.env.observation_space.n
