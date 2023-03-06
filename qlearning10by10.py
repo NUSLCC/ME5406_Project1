@@ -17,6 +17,7 @@ class QLEARNING:
         self.learning_rate = learning_rate
         self.P_table = {}
         self.Q_table = {}
+        self.action_map={0:"left", 1:"down", 2:"right", 3:"up"}
         self.action_total = []
         self.first_shortest_episode = []
         self.training_enough = False
@@ -125,13 +126,14 @@ class QLEARNING:
             print("Training is not enough, reder first shortest fails")
             return
         self.first_shortest_episode = min(self.action_total, key=len)
-        print("First shortest path with",len(self.first_shortest_episode),"steps in total")
-        self.env.reset()
-        self.env.render()
-        for each_step in self.first_shortest_episode:
-            self.env.step(each_step)
-            self.env.render()
-        return
+        print("First shortest path with",len(self.first_shortest_episode),"steps in total:", 
+              [self.action_map[a] for a in self.first_shortest_episode])
+        # self.env.reset()
+        # self.env.render()
+        # for each_step in self.first_shortest_episode:
+        #     self.env.step(each_step)
+        #     self.env.render()
+        # return
 
 if __name__ == '__main__': 
     m = QLEARNING(num_episode=1000, gamma=0.95, epsilon=0.1, learning_rate=0.1)

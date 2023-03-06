@@ -131,15 +131,15 @@ class SARA:
         self.first_shortest_episode = min(self.action_total, key=len)
         print("First shortest path with",len(self.first_shortest_episode),
               "steps in total:", [self.action_map[a] for a in self.first_shortest_episode])
-        self.env.reset()
-        self.env.render()
-        for each_step in self.first_shortest_episode:
-            self.env.step(each_step)
-            self.env.render()
-        return
+        # self.env.reset()
+        # self.env.render()
+        # for each_step in self.first_shortest_episode:
+        #     self.env.step(each_step)
+        #     self.env.render()
+        # return
 
 if __name__ == '__main__': 
     m = SARA(num_episode=1000, gamma=0.95, epsilon=0.1, learning_rate=0.1)
     m.run()
     m.render_policy_table()
-    #m.render_first_shortest_episode()
+    m.render_first_shortest_episode()
