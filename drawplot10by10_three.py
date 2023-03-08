@@ -40,7 +40,7 @@ def draw_avg_vs_num():
     plt.legend()
     # Set the plot title and axis labels
     Param = "gamma=" + str(GAMMA) + ",epsilon=" + str(EPSILON) + ",alpha="+ str(ALPHA)
-    plt.title("10x10 Average Reward VS Num of Episode with "+Param)
+    plt.title("10x10 Average Reward VS Num of Episode with "+Param+ " in " +str(TOTAL_NUM_EPO)+" episodes")
     plt.xlabel('Number of Episode')
     plt.ylabel('Average Reward')
     # Show the plot
@@ -70,7 +70,7 @@ def draw_total_success_comparison():
     plt.grid(True)
     plt.legend()
     Param = "gamma=" + str(GAMMA) + ",epsilon=" + str(EPSILON) + ",alpha="+ str(ALPHA)
-    plt.title("10x10 Num of Episode VS Successful Rate"+Param)
+    plt.title("10x10 Num of Episode VS Successful Rate"+Param+ " in " +str(TOTAL_NUM_EPO)+" episodes")
     plt.xlabel('Number of Episode ')
     plt.ylabel('Successful Rate')
     plt.show()
