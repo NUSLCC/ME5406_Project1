@@ -15,7 +15,6 @@ class QLEARNING:
         self.gamma = gamma
         self.epsilon = epsilon
         self.learning_rate = learning_rate
-        self.P_table = {}
         self.Q_table = {}
         self.action_map={0:"left", 1:"down", 2:"right", 3:"up"}
         self.action_total = []
@@ -29,7 +28,6 @@ class QLEARNING:
     """
     def init_table(self):
         for state in range(self.n_states):
-            self.P_table[state] = [1/self.n_actions] * self.n_actions
             self.Q_table[state] = [np.random.rand() * 0.01] * self.n_actions
 
     """
@@ -138,5 +136,5 @@ class QLEARNING:
 if __name__ == '__main__': 
     m = QLEARNING(num_episode=1000, gamma=0.95, epsilon=0.1, learning_rate=0.1)
     m.run()
-    m.render_policy_table()
-    m.render_first_shortest_episode()
+    #m.render_policy_table()
+    #m.render_first_shortest_episode()

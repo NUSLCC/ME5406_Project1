@@ -1,5 +1,6 @@
 import numpy as np
-from frozen_lake10by10 import Env10by10
+import random
+from env4by4 import Env4by4
 
 def create_x_by_y_table(x,y):
      output_list = []
@@ -8,11 +9,11 @@ def create_x_by_y_table(x,y):
           output_list.append(row)
      return output_list
 
-class MCES:
+class MCWOES4BY4:
      def __init__(self, num_episode, gamma, epsilon):
-          self.env = Env10by10()
-          self.num_row = 10
-          self.num_colomn = 10
+          self.env = Env4by4()
+          self.num_row = 4
+          self.num_colomn = 4
           self.n_states = self.env.observation_space.n
           self.n_actions = self.env.action_space.n
           self.num_episode = num_episode
@@ -24,11 +25,18 @@ class MCES:
           self.action_map={0:"left", 1:"down", 2:"right", 3:"up"}
           self.first_shortest_episode=[]
           self.training_enough = False
+          # Average reward for this round
+          self.average_reward = 0 
 
      def init_table(self):
           for state in range(self.n_states):
+               # This behavior satisfies the epsilon soft policy since the probability of each action
+               # under each state is 0.25, which is >= epsilon/num of actions when 0 < epsilon <= 1
                self.P_table[state] = [1/self.n_actions] * self.n_actions
-               self.Q_table[state] = [0] * self.n_actions
+               # Q(s,a) is arbitrary for all states and all actions, I choose a random number between 
+               # 0 to 1 as the Q value for each state-action pair
+               self.Q_table[state] = [random.uniform(0, 1) for a in range(self.n_actions)]
+               # Return(s,a) is an empty list for all states and all actions
                self.R_table[state] = {}
                for action in range(self.n_actions):
                     self.R_table[state][action] = []
@@ -67,14 +75,20 @@ class MCES:
                G = self.gamma * G + r
                return_list.append(G)
           return_list.reverse()
-          return state_list, action_list, return_list, result
+          return state_list, action_list, reward_list, return_list, result
      
      def run(self):
+          # Initialize three tables: Policy, Q, Return
           self.init_table()
+          # Create a reward list to collect reward from each episode
+          total_reward_list = []
+          # Record all successful episodes
           success_episode=[]
-          success_episode_index=[]       
+          # Record all successful episodes index
+          success_episode_index=[]
+          # Loop for each episode       
           for epo in range(self.num_episode):                                   
-               state_list, action_list, return_list, result = self.generate_episode()
+               state_list, action_list, reward_list, return_list, result = self.generate_episode()
                if (result == True):
                     #print("Successful in No.", str(epo+1),"episode")
                     success_episode.append(action_list)
@@ -90,7 +104,14 @@ class MCES:
                          self.Q_table[state][action] = Q
                          prime_action = np.argmax(self.Q_table[state])              
                          self.epsilon_greedy_policy(prime_action,state)
+               # Put reward sum of each episode into the total reward list
+               total_reward_list.append(np.sum(reward_list))
+          # Calculate the average reward for assigned number of episodes
+          self.average_reward = np.average(total_reward_list)
+          print("Average reward is",self.average_reward, "for total", self.num_episode, "episodes", )
+          # Check whether training is enough by checking the length of successful episode index
           if (len(success_episode)==0):
+               self.training_enough = False
                print("Trainig is not enough, no successful episode, please give a larger num_episode")
           else:
                self.training_enough = True
@@ -135,7 +156,7 @@ class MCES:
           print(policy_table)
           
 if __name__ == '__main__': 
-     m = MCES(num_episode=40000, gamma=0.95, epsilon=0.1)
+     m = MCWOES4BY4(num_episode=500, gamma=0.95, epsilon=0.1)
      m.run()
      #m.render_policy_table()
      #m.render_action_step()

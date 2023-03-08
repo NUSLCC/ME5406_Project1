@@ -1,5 +1,6 @@
 import numpy as np
-from env4by4 import Env4by4
+import random
+from frozen_lake10by10 import Env10by10
 
 def create_x_by_y_table(x,y):
      output_list = []
@@ -10,9 +11,9 @@ def create_x_by_y_table(x,y):
 
 class MCES:
      def __init__(self, num_episode, gamma, epsilon):
-          self.env = Env4by4()
-          self.num_row = 4
-          self.num_colomn = 4
+          self.env = Env10by10()
+          self.num_row = 10
+          self.num_colomn = 10
           self.n_states = self.env.observation_space.n
           self.n_actions = self.env.action_space.n
           self.num_episode = num_episode
@@ -28,12 +29,13 @@ class MCES:
      def init_table(self):
           for state in range(self.n_states):
                self.P_table[state] = [1/self.n_actions] * self.n_actions
-               self.Q_table[state] = [0] * self.n_actions
+               self.Q_table[state] = [random.uniform(0, 1) for a in range(self.n_actions)]
                self.R_table[state] = {}
                for action in range(self.n_actions):
                     self.R_table[state][action] = []
 
-     def epsilon_greedy_policy(self, prime_action, state):
+     def epsilon_greedy_policy(self, state):
+          prime_action = np.argmax(self.Q_table[state])
           for action in range(self.n_actions):
                if action==prime_action:
                     self.P_table[state][action] = 1 - self.epsilon + self.epsilon / self.n_actions
@@ -87,9 +89,8 @@ class MCES:
                          V_table[state][action]=1        
                          self.R_table[state][action].append(return_list[i])
                          Q = np.mean(self.R_table[state][action])                           
-                         self.Q_table[state][action] = Q
-                         prime_action = np.argmax(self.Q_table[state])              
-                         self.epsilon_greedy_policy(prime_action,state)
+                         self.Q_table[state][action] = Q              
+                         self.epsilon_greedy_policy(state)
           if (len(success_episode)==0):
                print("Trainig is not enough, no successful episode, please give a larger num_episode")
           else:
@@ -135,7 +136,8 @@ class MCES:
           print(policy_table)
           
 if __name__ == '__main__': 
-     m = MCES(num_episode=1000, gamma=0.95, epsilon=0.1)
+     m = MCES(num_episode=10000, gamma=0.95, epsilon=0.1)
      m.run()
+     print(m.Q_table)
      #m.render_policy_table()
      #m.render_action_step()

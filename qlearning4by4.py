@@ -1,7 +1,7 @@
 import numpy as np
 from env4by4 import Env4by4
 
-class QLEARNING:
+class QLEARNING4BY4:
     """
     Init the Q-learning class with input 
     """
@@ -15,11 +15,11 @@ class QLEARNING:
         self.gamma = gamma
         self.epsilon = epsilon
         self.learning_rate = learning_rate
-        self.P_table = {}
         self.Q_table = {}
         self.action_total = []
         self.first_shortest_episode = []
         self.training_enough = False
+        self.average_reward = 0 
     
     """
     Init two tables: 
@@ -28,7 +28,6 @@ class QLEARNING:
     """
     def init_table(self):
         for state in range(self.n_states):
-            self.P_table[state] = [1/self.n_actions] * self.n_actions
             self.Q_table[state] = [np.random.rand() * 0.01] * self.n_actions
 
     """
@@ -47,6 +46,8 @@ class QLEARNING:
     def run(self):
         # Initialize two tables
         self.init_table()
+        # Create a reward list to collect reward from each episode
+        total_reward_list = []
         # Record all successful episodes index
         success_episode_index=[]
         # Set the flag of enough training for outputing the first successful episode
@@ -57,6 +58,8 @@ class QLEARNING:
             state = self.env.reset()
             # Create the action list for each episode
             action_list = []
+            # Collect the total reward in each episode
+            reward_total = 0
             # Update this terminated to decide whether this episode ends 
             terminated = False
             # Loop for each step of episode
@@ -65,6 +68,8 @@ class QLEARNING:
                 action = self.epsilon_greedy_policy(state)
                 # Take action, receive reward and observe the next state
                 next_state, reward, terminated, _ = self.env.step(action)
+                # Collect reward in total for each episode
+                reward_total += reward
                 # That is the difference between SARSA & Q-learning
                 # Q-learning use the max Q value of new state as the Q prime
                 Q_prime = np.max(self.Q_table[next_state])
@@ -79,7 +84,11 @@ class QLEARNING:
                     success_episode_index.append((epo+1))
                     self.action_total.append(action_list)
                     #print("Successful in No.", str(epo+1),"episode")
-
+            # Put reward sum of each episode into the total reward list
+            total_reward_list.append(reward_total)
+        # Calculate the average reward for assigned number of episodes
+        self.average_reward = np.average(total_reward_list)
+        print("Average reward is",self.average_reward, "for total", self.num_episode, "episodes", )
         # Check whether training is enough by checking the length of successful episode index
         if(len(success_episode_index)==0):
             self.training_enough=False
@@ -134,7 +143,7 @@ class QLEARNING:
         return
 
 if __name__ == '__main__': 
-    m = QLEARNING(num_episode=1000, gamma=0.95, epsilon=0.1, learning_rate=0.1)
+    m = QLEARNING4BY4(num_episode=10000, gamma=0.95, epsilon=0.1, learning_rate=0.1)
     m.run()
     #m.render_policy_table()
     #m.render_first_shortest_episode()

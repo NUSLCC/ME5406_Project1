@@ -1,26 +1,38 @@
 import numpy as np
 from env4by4 import Env4by4
 
-class SARA:
+class SARSA4BY4:
     """
     Init the SARSA class with input 
     """
     def __init__(self, num_episode=1000, gamma=0.95, epsilon=0.1, learning_rate=0.1):
+        # Use the adjusted 4 by 4 environment of frozen lake
         self.env = Env4by4()
         self.num_row = 4
         self.num_colomn = 4
+        # Set alias of the number of states and actions
         self.n_states = self.env.observation_space.n
         self.n_actions = self.env.action_space.n
+        # Set the number of episode
         self.num_episode = num_episode
+        # Set the gamma (discount)
         self.gamma = gamma
+        # Set the epsilon (probability)
         self.epsilon = epsilon
+        # Set the alpha
         self.learning_rate = learning_rate
+        # Create empty dictionary for policy and Q value
         self.P_table = {}
         self.Q_table = {}
         self.action_total = []
+        # In this environment, directions are a bit different
         self.action_map={0:"left", 1:"down", 2:"right", 3:"up"}
+        # Empty list to store first shortest episode
         self.first_shortest_episode = []
+        # Use this flag to check the training is enough or not
         self.training_enough = False
+        # Average reward for this round
+        self.average_reward = 0 
     
     """
     Init two tables: 
@@ -33,21 +45,38 @@ class SARA:
             self.Q_table[state] = [np.random.rand() * 0.01] * self.n_actions
 
     """
-    Epislon greedy policy for choosing the action
+    Epislon greedy policy for choosing the prime action
     """     
     def epsilon_greedy_policy(self, state):
+        # With probability less than epsilon, a random action will be selected
         if np.random.uniform(0, 1) < self.epsilon:
             action = self.env.action_space.sample()
+        # Otherwise, choose the action with the highest Q value at this state
         else:
             action = np.argmax(self.Q_table[state])
         return action
-
+    
+    '''
+    Update the policy table with epsilon greedy policy
+    '''
+    def update_policy_table(self, state):
+        # Get prime action with the max Q value at specific state
+        prime_action = np.argmax(self.Q_table[state])
+        # Set probability (epsilon/num_of_actions) to each action first
+        policy = np.ones(self.n_actions, dtype=float) * self.epsilon / self.n_actions
+        # Update the prime action's probability to 1-epsilon+epsilon/num_of_actions
+        policy[prime_action] = 1 - self.epsilon + policy[prime_action]
+        # Update the policy table with probabilty of each action at current state
+        self.P_table[state] = policy
+    
     """
     Run function for iterating assigned number of episodes by using max Q value as the Q prime
     """ 
     def run(self):
         # Initialize two tables
         self.init_table()
+        # Create a reward list to collect reward from each episode
+        total_reward_list = []
         # Record all successful episodes index
         success_episode_index=[]
         # Set the flag of enough training for outputing the first successful episode
@@ -60,6 +89,8 @@ class SARA:
             action = self.epsilon_greedy_policy(state)
             # Create the action list for each episode
             action_list = []
+            # Collect the total reward in each episode
+            reward_total = 0
             # Update this terminated to decide whether this episode ends 
             terminated = False
             # Loop for each step of episode
@@ -68,6 +99,8 @@ class SARA:
                 action_list.append(action)
                 # Take action, receive reward and observe the next state
                 next_state, reward, terminated, _ = self.env.step(action)
+                # Collect reward in total for each episode
+                reward_total += reward
                 # Choose next action from next state using policy derived from Q (epsilon-greedy)
                 next_action = self.epsilon_greedy_policy(next_state)
                 # Here is the difference between SARSA & Q-learning
@@ -75,6 +108,8 @@ class SARA:
                 Q_prime = self.Q_table[next_state][next_action]
                 # Update the Q table with this Q prime
                 self.Q_table[state][action] += self.learning_rate * (reward + self.gamma * Q_prime - self.Q_table[state][action])
+                # Update the P table
+                self.update_policy_table(state)
                 # Update the state
                 state = next_state
                 action = next_action
@@ -83,7 +118,11 @@ class SARA:
                     success_episode_index.append((epo+1))
                     self.action_total.append(action_list)
                     #print("Successful in No.", str(epo+1),"episode")
-
+            # Put reward sum of each episode into the total reward list
+            total_reward_list.append(reward_total)
+        # Calculate the average reward for assigned number of episodes
+        self.average_reward = np.average(total_reward_list)
+        print("Average reward is",self.average_reward, "for total", self.num_episode, "episodes", )
         # Check whether training is enough by checking the length of successful episode index
         if(len(success_episode_index)==0):
             self.training_enough=False
@@ -96,7 +135,7 @@ class SARA:
     """
     Render the policy by a long string with four lines
     """ 
-    def render_policy_table(self):
+    def render_optimal_policy(self):
         if not self.training_enough:
             print("Training is not enough, reder policy table fails")
             return
@@ -109,8 +148,10 @@ class SARA:
         policy_table = ""
         for state in range(self.n_states):
             action = optimal_policy[state]
+            # Change character H to Hole
             if self.env.desc.flatten()[state] == b'H':
                 policy_table += "Hole   "
+            # Change character G to Goal
             elif self.env.desc.flatten()[state] == b'G':
                 policy_table += "Goal   "
             else:
@@ -128,18 +169,21 @@ class SARA:
         if not self.training_enough:
             print("Training is not enough, reder first shortest fails")
             return
+        # min() will return the first shortest episode with its action list
         self.first_shortest_episode = min(self.action_total, key=len)
         print("First shortest path with",len(self.first_shortest_episode),
               "steps in total:", [self.action_map[a] for a in self.first_shortest_episode])
+        # Reset the agent to the start pose
         self.env.reset()
         self.env.render()
+        # render this episode by default rendering function
         for each_step in self.first_shortest_episode:
             self.env.step(each_step)
             self.env.render()
         return
 
 if __name__ == '__main__': 
-    m = SARA(num_episode=1000, gamma=0.95, epsilon=0.1, learning_rate=0.1)
+    m = SARSA4BY4(num_episode=1000, gamma=0.95, epsilon=0.1, learning_rate=0.1)
     m.run()
-    #m.render_policy_table()
+    #m.render_optimal_policy()
     #m.render_first_shortest_episode()
