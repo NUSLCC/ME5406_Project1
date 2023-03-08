@@ -1,7 +1,8 @@
 import numpy as np
 import random
-from frozen_lake10by10 import Env10by10
+from env10by10 import Env10by10
 
+# Create a x by y 2D-list
 def create_x_by_y_table(x,y):
      output_list = []
      for i in range(x):
@@ -9,7 +10,10 @@ def create_x_by_y_table(x,y):
           output_list.append(row)
      return output_list
 
-class MCES:
+class MCWOES4BY4:
+     """
+     Init the MC control without ES class with input 
+     """
      def __init__(self, num_episode, gamma, epsilon):
           self.env = Env10by10()
           self.num_row = 10
@@ -25,23 +29,41 @@ class MCES:
           self.action_map={0:"left", 1:"down", 2:"right", 3:"up"}
           self.first_shortest_episode=[]
           self.training_enough = False
-
+          # Average reward for this round
+          self.average_reward = 0 
+    
+     """
+     Init three tables: 
+     Policy table with average probability for each action at each state
+     Q table with small arbitrary value for each state and action pair
+     Return table an empty list for each state and action pair
+     """
      def init_table(self):
           for state in range(self.n_states):
+               # This behavior satisfies the epsilon soft policy since the probability of each action
+               # under each state is 0.25, which is >= epsilon/num of actions when 0 < epsilon <= 1
                self.P_table[state] = [1/self.n_actions] * self.n_actions
+               # Q(s,a) is arbitrary for all states and all actions, I choose a random number between 
+               # 0 to 1 as the Q value for each state-action pair
                self.Q_table[state] = [random.uniform(0, 1) for a in range(self.n_actions)]
+               # Return(s,a) is an empty list for all states and all actions
                self.R_table[state] = {}
                for action in range(self.n_actions):
                     self.R_table[state][action] = []
 
-     def epsilon_greedy_policy(self, state):
-          prime_action = np.argmax(self.Q_table[state])
+     """
+     Epislon greedy policy for updating the policy table
+     """ 
+     def epsilon_greedy_policy(self, prime_action, state):
           for action in range(self.n_actions):
                if action==prime_action:
                     self.P_table[state][action] = 1 - self.epsilon + self.epsilon / self.n_actions
                else:
                     self.P_table[state][action] = self.epsilon / self.n_actions
-         
+
+     """
+     Function to generate random episode with reversed accumulated G as return table 
+     """    
      def generate_episode(self):
           state_list =   []
           action_list =  []
@@ -69,29 +91,58 @@ class MCES:
                G = self.gamma * G + r
                return_list.append(G)
           return_list.reverse()
-          return state_list, action_list, return_list, result
+          return state_list, action_list, reward_list, return_list, result
      
+     """
+     Run function of iterating assigned number of episodes to update the policy table
+     """
      def run(self):
+          # Initialize three tables: Policy, Q, Return
           self.init_table()
+          # Create a reward list to collect reward from each episode
+          total_reward_list = []
+          # Record all successful episodes
           success_episode=[]
-          success_episode_index=[]       
+          # Record all successful episodes index
+          success_episode_index=[]
+          # Loop for each episode       
           for epo in range(self.num_episode):                                   
-               state_list, action_list, return_list, result = self.generate_episode()
+               state_list, action_list, reward_list, return_list, result = self.generate_episode()
+               # If this episode is successful
                if (result == True):
                     #print("Successful in No.", str(epo+1),"episode")
+                    # Store all actions for successful episodes
                     success_episode.append(action_list)
+                    # Store their index for getting the first one
                     success_episode_index.append((epo+1))
-               
+               # This creates a empty V_table to store whether agent has visited some state-action pair before
                V_table = create_x_by_y_table(self.n_states, self.n_actions)
-               for i in range(len(state_list)):                                      
+               # Iterate each state in current episode
+               for i in range(len(state_list)):
+                    # Get state and action seperately from each list                                      
                     state, action = state_list[i], action_list[i]
+                    # 0 means not visited, 1 means visited, updatet this visited table
                     if V_table[state][action]==0:                        
-                         V_table[state][action]=1        
+                         V_table[state][action]=1
+                         # Append G of current state-action pair to the Return table R(s,a)
+                         # G is calculated in generate_episode() and stored in return list
                          self.R_table[state][action].append(return_list[i])
-                         Q = np.mean(self.R_table[state][action])                           
-                         self.Q_table[state][action] = Q              
-                         self.epsilon_greedy_policy(state)
+                         # Update the Q value with average of Return(s,a)
+                         Q = np.mean(self.R_table[state][action])
+                         # Use this Q value to update Q table with current state-action pair                           
+                         self.Q_table[state][action] = Q
+                         # Get prime action with maximum Q value at this state
+                         prime_action = np.argmax(self.Q_table[state])
+                         # Update the policy table with this prime action and state              
+                         self.epsilon_greedy_policy(prime_action,state)
+               # Put reward sum of each episode into the total reward list
+               total_reward_list.append(np.sum(reward_list))
+          # Calculate the average reward for assigned number of episodes
+          self.average_reward = np.average(total_reward_list)
+          print("Average reward is",self.average_reward, "for total", self.num_episode, "episodes", )
+          # Check whether training is enough by checking the length of successful episode index
           if (len(success_episode)==0):
+               self.training_enough = False
                print("Trainig is not enough, no successful episode, please give a larger num_episode")
           else:
                self.training_enough = True
@@ -99,7 +150,10 @@ class MCES:
                print("First success episode No.", min(success_episode_index))
                self.first_shortest_episode = min(success_episode, key=len)
      
-     def render_action_step(self):
+     """
+     Render the first shortest path with embedded render function
+     """
+     def render_first_shortest_path(self):
           if not self.training_enough:
                return
           print("First shortest path with",len(self.first_shortest_episode),
@@ -111,6 +165,9 @@ class MCES:
                self.env.render()
           return
 
+     """
+     Render the optimal policy table with left down right up words instead of 0 1 2 3, also skip Start Hole and Goal
+     """
      def render_policy_table(self):
           if not self.training_enough:
                print("Training is not enough, reder policy table fails")
@@ -136,8 +193,7 @@ class MCES:
           print(policy_table)
           
 if __name__ == '__main__': 
-     m = MCES(num_episode=10000, gamma=0.95, epsilon=0.1)
+     m = MCWOES4BY4(num_episode=500, gamma=0.95, epsilon=0.1)
      m.run()
-     print(m.Q_table)
      #m.render_policy_table()
-     #m.render_action_step()
+     #m.render_first_shortest_path()

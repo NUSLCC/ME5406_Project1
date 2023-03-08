@@ -6,7 +6,7 @@ import numpy as np
 GAMMA = 0.95
 EPSILON = 0.1
 ALPHA = 0.1
-TOTAL_NUM_EPO = 1001
+TOTAL_NUM_EPO = 10001
 STEP = 50
 
 def run_episode_with_method(class_name1, class_name2, class_name3):

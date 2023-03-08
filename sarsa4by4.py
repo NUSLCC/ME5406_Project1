@@ -36,7 +36,7 @@ class SARSA4BY4:
     
     """
     Init two tables: 
-    policy table with average probability for each action at each state
+    Policy table with average probability for each action at each state
     Q table with all zero for each action at each state
     """
     def init_table(self):
@@ -56,9 +56,9 @@ class SARSA4BY4:
             action = np.argmax(self.Q_table[state])
         return action
     
-    '''
+    """
     Update the policy table with epsilon greedy policy
-    '''
+    """
     def update_policy_table(self, state):
         # Get prime action with the max Q value at specific state
         prime_action = np.argmax(self.Q_table[state])
@@ -70,7 +70,7 @@ class SARSA4BY4:
         self.P_table[state] = policy
     
     """
-    Run function for iterating assigned number of episodes by using max Q value as the Q prime
+    Run function for iterating assigned number of episodes by using same policy
     """ 
     def run(self):
         # Initialize two tables

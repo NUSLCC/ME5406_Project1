@@ -1,5 +1,5 @@
 import numpy as np
-from frozen_lake10by10 import Env10by10
+from env10by10 import Env10by10
 
 class SARA:
     """
