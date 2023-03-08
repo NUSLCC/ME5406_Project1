@@ -6,7 +6,7 @@ import numpy as np
 GAMMA = 0.95
 EPSILON = 0.1
 ALPHA = 0.1
-TOTAL_NUM_EPO = 1000
+TOTAL_NUM_EPO = 10000
 STEP = 100
 
 def run_episode_with_method(class_name1, class_name2, class_name3):
@@ -134,5 +134,5 @@ def draw_gamma_vs_success_rate():
 
 #draw_avg_vs_num()
 #draw_total_success_comparison()
-draw_epsilon_vs_success_rate()
+#draw_epsilon_vs_success_rate()
 #draw_gamma_vs_success_rate()

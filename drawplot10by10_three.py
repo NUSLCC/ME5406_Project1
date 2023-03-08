@@ -75,6 +75,64 @@ def draw_total_success_comparison():
     plt.ylabel('Successful Rate')
     plt.show()
 
-draw_avg_vs_num()
+def draw_epsilon_vs_success_rate():
+    epsilon_list = []
+    success_rate_list1 = []
+    success_rate_list2 = []
+    success_rate_list3 = []
+    for epsilon in np.arange(0.05, 1.01, 0.05).tolist():
+        model1 = MCWOES10BY10(num_episode=TOTAL_NUM_EPO, gamma=GAMMA, epsilon=epsilon)
+        model1.run()
+        model2 = SARSA10BY10(num_episode=TOTAL_NUM_EPO, gamma=GAMMA, epsilon=epsilon, learning_rate=ALPHA)
+        model2.run()
+        model3 = QLEARNING10BY10(num_episode=TOTAL_NUM_EPO, gamma=GAMMA, epsilon=epsilon, learning_rate=ALPHA)
+        model3.run()
+        epsilon_list.append(epsilon)
+        success_rate_list1.append(len(model1.success_episode_index)/TOTAL_NUM_EPO)
+        success_rate_list2.append(len(model2.success_episode_index)/TOTAL_NUM_EPO)
+        success_rate_list3.append(len(model3.success_episode_index)/TOTAL_NUM_EPO)
+    # Create a plot to show the relation between number of episode and average reward
+    plt.plot(epsilon_list, success_rate_list1, label='mc_wo_es')
+    plt.plot(epsilon_list, success_rate_list2, label='sarsa')
+    plt.plot(epsilon_list, success_rate_list3, label='qlearning')
+    plt.grid(True)
+    plt.legend()
+    Param = "gamma=" + str(GAMMA) + ",alpha="+ str(ALPHA)
+    plt.title("10x10 Epsilon VS Successful Rate with "+Param+ " in " +str(TOTAL_NUM_EPO)+" episodes")
+    plt.xlabel('Epsilon')
+    plt.ylabel('Successful Rate')
+    plt.show()
+
+def draw_gamma_vs_success_rate():
+    gamma_list = []
+    success_rate_list1 = []
+    success_rate_list2 = []
+    success_rate_list3 = []
+    for g in np.arange(0.05, 1.01, 0.05).tolist():
+        model1 = MCWOES10BY10(num_episode=TOTAL_NUM_EPO, gamma=g, epsilon=EPSILON)
+        model1.run()
+        model2 = SARSA10BY10(num_episode=TOTAL_NUM_EPO, gamma=g, epsilon=EPSILON, learning_rate=ALPHA)
+        model2.run()
+        model3 = QLEARNING10BY10(num_episode=TOTAL_NUM_EPO, gamma=g, epsilon=EPSILON, learning_rate=ALPHA)
+        model3.run()
+        gamma_list.append(g)
+        success_rate_list1.append(len(model1.success_episode_index)/TOTAL_NUM_EPO)
+        success_rate_list2.append(len(model2.success_episode_index)/TOTAL_NUM_EPO)
+        success_rate_list3.append(len(model3.success_episode_index)/TOTAL_NUM_EPO)
+    # Create a plot to show the relation between number of episode and average reward
+    plt.plot(gamma_list, success_rate_list1, label='mc_wo_es')
+    plt.plot(gamma_list, success_rate_list2, label='sarsa')
+    plt.plot(gamma_list, success_rate_list3, label='qlearning')
+    plt.grid(True)
+    plt.legend()
+    Param = "epsilon=" + str(EPSILON) + ",alpha="+ str(ALPHA)
+    plt.title("10x10 Gamma VS Successful Rate with "+Param+ " in " +str(TOTAL_NUM_EPO)+" episodes")
+    plt.xlabel('Gamma')
+    plt.ylabel('Successful Rate')
+    plt.show()
+
+#draw_avg_vs_num()
 #draw_total_success_comparison()
+#draw_epsilon_vs_success_rate()
+#draw_gamma_vs_success_rate()
 
