@@ -10,7 +10,7 @@ def create_x_by_y_table(x,y):
           output_list.append(row)
      return output_list
 
-class MCWOES4BY4:
+class MCWOES10BY10:
      """
      Init the MC control without ES class with input 
      """
@@ -193,7 +193,7 @@ class MCWOES4BY4:
           print(policy_table)
           
 if __name__ == '__main__': 
-     m = MCWOES4BY4(num_episode=500, gamma=0.95, epsilon=0.1)
+     m = MCWOES10BY10(num_episode=50000, gamma=1, epsilon=0.5)
      m.run()
      #m.render_policy_table()
      #m.render_first_shortest_path()

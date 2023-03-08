@@ -16,6 +16,7 @@ class QLEARNING4BY4:
         self.epsilon = epsilon
         self.learning_rate = learning_rate
         self.Q_table = {}
+        self.action_map={0:"left", 1:"down", 2:"right", 3:"up"}
         self.action_total = []
         self.first_shortest_episode = []
         self.training_enough = False
@@ -88,7 +89,7 @@ class QLEARNING4BY4:
             total_reward_list.append(reward_total)
         # Calculate the average reward for assigned number of episodes
         self.average_reward = np.average(total_reward_list)
-        print("Average reward is",self.average_reward, "for total", self.num_episode, "episodes", )
+        print("Average reward is",self.average_reward, "for total", self.num_episode, "episodes")
         # Check whether training is enough by checking the length of successful episode index
         if(len(success_episode_index)==0):
             self.training_enough=False
@@ -134,14 +135,15 @@ class QLEARNING4BY4:
             print("Training is not enough, reder first shortest fails")
             return
         self.first_shortest_episode = min(self.action_total, key=len)
-        print("First shortest path with",len(self.first_shortest_episode),"steps in total")
-        self.env.reset()
-        self.env.render()
-        for each_step in self.first_shortest_episode:
-            self.env.step(each_step)
-            self.env.render()
-        return
-
+        print("First shortest path with",len(self.first_shortest_episode),"steps in total:", 
+              [self.action_map[a] for a in self.first_shortest_episode])
+        # self.env.reset()
+        # self.env.render()
+        # for each_step in self.first_shortest_episode:
+        #     self.env.step(each_step)
+        #     self.env.render()
+        # return
+        
 if __name__ == '__main__': 
     m = QLEARNING4BY4(num_episode=10000, gamma=0.95, epsilon=0.1, learning_rate=0.1)
     m.run()

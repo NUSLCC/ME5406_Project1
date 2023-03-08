@@ -28,8 +28,6 @@ def run_episode_with_method(class_name1, class_name2, class_name3):
 
     return episode_list, avg_reward_list_method1, avg_reward_list_method2, avg_reward_list_method3
 
-
-
 # Run different method
 episode_list, avg_reward_list_method1, avg_reward_list_method2, avg_reward_list_method3 = run_episode_with_method(MCWOES4BY4, SARSA4BY4, QLEARNING4BY4)
 
@@ -41,7 +39,7 @@ plt.grid(True)
 plt.legend()
 # Set the plot title and axis labels
 Param = "gamma=" + str(GAMMA) + ",epsilon=" + str(EPSILON) + ",alpha="+ str(ALPHA)
-plt.title("Avg Reward VS Num of Episode with "+Param)
+plt.title("4x4 Avg Reward VS Num of Episode with "+Param)
 plt.xlabel('Number of Episode')
 plt.ylabel('Average Reward')
 # Show the plot

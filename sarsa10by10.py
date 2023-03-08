@@ -1,11 +1,12 @@
 import numpy as np
 from env10by10 import Env10by10
 
-class SARA:
+class SARSA10BY10:
     """
     Init the SARSA class with input 
     """
     def __init__(self, num_episode=1000, gamma=0.95, epsilon=0.1, learning_rate=0.1):
+        # Use the adjusted 10 by 10 environment of frozen lake
         self.env = Env10by10()
         self.num_row = 10
         self.num_colomn = 10
@@ -30,7 +31,9 @@ class SARA:
         self.first_shortest_episode = []
         # Use this flag to check the training is enough or not
         self.training_enough = False
-    
+        # Average reward for this round
+        self.average_reward = 0 
+
     """
     Init two tables: 
     policy table with average probability for each action at each state
@@ -53,9 +56,9 @@ class SARA:
             action = np.argmax(self.Q_table[state])
         return action
     
-    '''
+    """
     Update the policy table with epsilon greedy policy
-    '''
+    """
     def update_policy_table(self, state):
         # Get prime action with the max Q value at specific state
         prime_action = np.argmax(self.Q_table[state])
@@ -67,11 +70,13 @@ class SARA:
         self.P_table[state] = policy
     
     """
-    Run function for iterating assigned number of episodes by using max Q value as the Q prime
+    Run function for iterating assigned number of episodes by using same policy
     """ 
     def run(self):
         # Initialize two tables
         self.init_table()
+        # Create a reward list to collect reward from each episode
+        total_reward_list = []        
         # Record all successful episodes index
         success_episode_index=[]
         # Set the flag of enough training for outputing the first successful episode
@@ -84,6 +89,8 @@ class SARA:
             action = self.epsilon_greedy_policy(state)
             # Create the action list for each episode
             action_list = []
+            # Collect the total reward in each episode
+            reward_total = 0
             # Update this terminated to decide whether this episode ends 
             terminated = False
             # Loop for each step of episode
@@ -92,6 +99,8 @@ class SARA:
                 action_list.append(action)
                 # Take action, receive reward and observe the next state
                 next_state, reward, terminated, _ = self.env.step(action)
+                # Collect reward in total for each episode
+                reward_total += reward
                 # Choose next action from next state using policy derived from Q (epsilon-greedy)
                 next_action = self.epsilon_greedy_policy(next_state)
                 # Here is the difference between SARSA & Q-learning
@@ -109,7 +118,11 @@ class SARA:
                     success_episode_index.append((epo+1))
                     self.action_total.append(action_list)
                     #print("Successful in No.", str(epo+1),"episode")
-
+            # Put reward sum of each episode into the total reward list
+            total_reward_list.append(reward_total)
+        # Calculate the average reward for assigned number of episodes
+        self.average_reward = np.average(total_reward_list)
+        print("Average reward is",self.average_reward, "for total", self.num_episode, "episodes", )
         # Check whether training is enough by checking the length of successful episode index
         if(len(success_episode_index)==0):
             self.training_enough=False
@@ -170,7 +183,7 @@ class SARA:
         return
 
 if __name__ == '__main__': 
-    m = SARA(num_episode=1000, gamma=0.95, epsilon=0.1, learning_rate=0.1)
+    m = SARSA10BY10(num_episode=1000, gamma=0.95, epsilon=0.1, learning_rate=0.1)
     m.run()
     #m.render_optimal_policy()
     #m.render_first_shortest_episode()
