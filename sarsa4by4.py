@@ -33,6 +33,7 @@ class SARSA4BY4:
         self.training_enough = False
         # Average reward for this round
         self.average_reward = 0 
+        self.success_episode_index=[]
     
     """
     Init two tables: 
@@ -77,8 +78,8 @@ class SARSA4BY4:
         self.init_table()
         # Create a reward list to collect reward from each episode
         total_reward_list = []
-        # Record all successful episodes index
-        success_episode_index=[]
+        # Reset and ready to record all successful episodes index
+        self.success_episode_index.clear()
         # Set the flag of enough training for outputing the first successful episode
         self.training_enough=False
         # Loop for each episode   
@@ -115,7 +116,7 @@ class SARSA4BY4:
                 action = next_action
                 # Check whether it reaches the goal state
                 if (next_state == self.n_states-1):
-                    success_episode_index.append((epo+1))
+                    self.success_episode_index.append((epo+1))
                     self.action_total.append(action_list)
                     #print("Successful in No.", str(epo+1),"episode")
             # Put reward sum of each episode into the total reward list
@@ -124,13 +125,13 @@ class SARSA4BY4:
         self.average_reward = np.average(total_reward_list)
         print("Average reward is",self.average_reward, "for total", self.num_episode, "episodes", )
         # Check whether training is enough by checking the length of successful episode index
-        if(len(success_episode_index)==0):
+        if(len(self.success_episode_index)==0):
             self.training_enough=False
             print("Training is not enough, no successful episode, please give a larger num_episode")
         else:
             self.training_enough=True
-            print("Total successful episode count", len(success_episode_index), "in", self.num_episode, "episodes")
-            print("First success episode No.", min(success_episode_index))                   
+            print("Total successful episode count", len(self.success_episode_index), "in", self.num_episode, "episodes")
+            print("First success episode No.", min(self.success_episode_index))                   
 
     """
     Render the policy by a long string with four lines

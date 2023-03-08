@@ -31,6 +31,8 @@ class MCWOES4BY4:
           self.training_enough = False
           # Average reward for this round
           self.average_reward = 0 
+          # Record all successful episodes index
+          self.success_episode_index = []
     
      """
      Init three tables: 
@@ -103,8 +105,8 @@ class MCWOES4BY4:
           total_reward_list = []
           # Record all successful episodes
           success_episode=[]
-          # Record all successful episodes index
-          success_episode_index=[]
+          # Reset and ready to record all successful episodes index
+          self.success_episode_index.clear()
           # Loop for each episode       
           for epo in range(self.num_episode):                                   
                state_list, action_list, reward_list, return_list, result = self.generate_episode()
@@ -114,7 +116,7 @@ class MCWOES4BY4:
                     # Store all actions for successful episodes
                     success_episode.append(action_list)
                     # Store their index for getting the first one
-                    success_episode_index.append((epo+1))
+                    self.success_episode_index.append((epo+1))
                # This creates a empty V_table to store whether agent has visited some state-action pair before
                V_table = create_x_by_y_table(self.n_states, self.n_actions)
                # Iterate each state in current episode
@@ -147,7 +149,7 @@ class MCWOES4BY4:
           else:
                self.training_enough = True
                print("Total successful episode count", len(success_episode), "in", self.num_episode, "episodes")
-               print("First success episode No.", min(success_episode_index))
+               print("First success episode No.", min(self.success_episode_index))
                self.first_shortest_episode = min(success_episode, key=len)
      
      """
@@ -193,7 +195,7 @@ class MCWOES4BY4:
           print(policy_table)
           
 if __name__ == '__main__': 
-     m = MCWOES4BY4(num_episode=500, gamma=0.95, epsilon=0.1)
+     m = MCWOES4BY4(num_episode=1000, gamma=0.85, epsilon=0.1)
      m.run()
      #m.render_policy_table()
      #m.render_first_shortest_path()
