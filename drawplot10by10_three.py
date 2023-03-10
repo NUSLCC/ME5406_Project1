@@ -6,8 +6,8 @@ import numpy as np
 GAMMA = 0.95
 EPSILON = 0.1
 ALPHA = 0.1
-TOTAL_NUM_EPO = 10000
-STEP = 100
+TOTAL_NUM_EPO = 1000
+STEP = 10
 
 def run_episode_with_method(class_name1, class_name2, class_name3):
     episode_list = []
@@ -28,7 +28,7 @@ def run_episode_with_method(class_name1, class_name2, class_name3):
 
     return episode_list, avg_reward_list_method1, avg_reward_list_method2, avg_reward_list_method3
 
-def draw_avg_vs_num():
+def draw_avg_vs_num_epo():
     # Run different method
     episode_list, avg_reward_list_method1, avg_reward_list_method2, avg_reward_list_method3 = run_episode_with_method(MCWOES10BY10, SARSA10BY10, QLEARNING10BY10)
 
@@ -46,7 +46,7 @@ def draw_avg_vs_num():
     # Show the plot
     plt.show()
 
-def draw_total_success_comparison():
+def draw_num_epo_vs_success_rate():
     episode_list = []
     success_rate_list1 = []
     success_rate_list2 = []
@@ -131,8 +131,7 @@ def draw_gamma_vs_success_rate():
     plt.ylabel('Successful Rate')
     plt.show()
 
-#draw_avg_vs_num()
-#draw_total_success_comparison()
+#draw_avg_vs_num_epo()
+#draw_num_epo_vs_success_rate()
 #draw_epsilon_vs_success_rate()
 #draw_gamma_vs_success_rate()
-

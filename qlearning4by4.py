@@ -1,5 +1,6 @@
 import numpy as np
 from env4by4 import Env4by4
+import time
 
 class QLEARNING4BY4:
     """
@@ -22,6 +23,7 @@ class QLEARNING4BY4:
         self.training_enough = False
         self.average_reward = 0
         self.success_episode_index=[]
+        self.training_time = 0
     
     """
     Init two tables: 
@@ -46,6 +48,7 @@ class QLEARNING4BY4:
     Run function for iterating assigned number of episodes by using max Q value as the Q prime
     """ 
     def run(self):
+        start_time = time.time()
         # Initialize two tables
         self.init_table()
         # Create a reward list to collect reward from each episode
@@ -88,6 +91,9 @@ class QLEARNING4BY4:
                     #print("Successful in No.", str(epo+1),"episode")
             # Put reward sum of each episode into the total reward list
             total_reward_list.append(reward_total)
+        # Calculate the training time
+        self.training_time = time.time()-start_time
+        print("The training time is ", self.training_time, "s")
         # Calculate the average reward for assigned number of episodes
         self.average_reward = np.average(total_reward_list)
         print("Average reward is",self.average_reward, "for total", self.num_episode, "episodes")
@@ -138,15 +144,15 @@ class QLEARNING4BY4:
         self.first_shortest_episode = min(self.action_total, key=len)
         print("First shortest path with",len(self.first_shortest_episode),"steps in total:", 
               [self.action_map[a] for a in self.first_shortest_episode])
-        # self.env.reset()
-        # self.env.render()
-        # for each_step in self.first_shortest_episode:
-        #     self.env.step(each_step)
-        #     self.env.render()
-        # return
+        self.env.reset()
+        self.env.render()
+        for each_step in self.first_shortest_episode:
+            self.env.step(each_step)
+            self.env.render()
+        return
         
 if __name__ == '__main__': 
-    m = QLEARNING4BY4(num_episode=10000, gamma=0.95, epsilon=0.1, learning_rate=0.1)
+    m = QLEARNING4BY4(num_episode=1000, gamma=0.95, epsilon=0.1, learning_rate=0.1)
     m.run()
-    #m.render_policy_table()
-    #m.render_first_shortest_episode()
+    m.render_policy_table()
+    m.render_first_shortest_episode()

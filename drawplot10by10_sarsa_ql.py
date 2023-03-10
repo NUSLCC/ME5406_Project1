@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 GAMMA = 0.95
 EPSILON = 0.1
-TOTAL_NUM_EPO = 10000
+TOTAL_NUM_EPO = 1000
 
 def draw_alpha_vs_total_success_comparison():
     alpha_list = []
@@ -24,11 +24,10 @@ def draw_alpha_vs_total_success_comparison():
     plt.plot(alpha_list, success_rate_list2, label='qlearning')
     plt.grid(True)
     plt.legend()
-    Param = str(TOTAL_NUM_EPO) + "episodes" + ",gamma=" + str(GAMMA) + ",epsilon=" + str(EPSILON)
+    Param = str(TOTAL_NUM_EPO) + " episodes" + ",gamma=" + str(GAMMA) + ",epsilon=" + str(EPSILON)
     plt.title("10x10 Learning Rate VS Successful Rate with "+Param)
     plt.xlabel('Learning rate')
     plt.ylabel('Successful Rate')
     plt.show()
 
-
-draw_alpha_vs_total_success_comparison()
+#draw_alpha_vs_total_success_comparison()

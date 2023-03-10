@@ -1,5 +1,8 @@
 import numpy as np
 from env10by10 import Env10by10
+#from env10by10_high_penalty import Env10by10
+#from env10by10_high_reward import Env10by10
+import time
 
 class QLEARNING10BY10:
     """
@@ -22,7 +25,8 @@ class QLEARNING10BY10:
         self.training_enough = False
         self.average_reward = 0
         self.success_episode_index=[]
-    
+        self.training_time = 0
+
     """
     Init two tables: 
     policy table with average probability for each action at each state
@@ -46,6 +50,7 @@ class QLEARNING10BY10:
     Run function for iterating assigned number of episodes by using max Q value as the Q prime
     """ 
     def run(self):
+        start_time = time.time()
         # Initialize two tables
         self.init_table()
         # Create a reward list to collect reward from each episode
@@ -88,6 +93,9 @@ class QLEARNING10BY10:
                     #print("Successful in No.", str(epo+1),"episode")
             # Put reward sum of each episode into the total reward list
             total_reward_list.append(reward_total)
+        # Calculate the training time
+        self.training_time = time.time()-start_time
+        print("The training time is ", self.training_time, "s")
         # Calculate the average reward for assigned number of episodes
         self.average_reward = np.average(total_reward_list)
         print("Average reward is",self.average_reward, "for total", self.num_episode, "episodes")
@@ -138,15 +146,15 @@ class QLEARNING10BY10:
         self.first_shortest_episode = min(self.action_total, key=len)
         print("First shortest path with",len(self.first_shortest_episode),"steps in total:", 
               [self.action_map[a] for a in self.first_shortest_episode])
-        # self.env.reset()
-        # self.env.render()
-        # for each_step in self.first_shortest_episode:
-        #     self.env.step(each_step)
-        #     self.env.render()
-        # return
+        self.env.reset()
+        self.env.render()
+        for each_step in self.first_shortest_episode:
+            self.env.step(each_step)
+            self.env.render()
+        return
 
 if __name__ == '__main__': 
     m = QLEARNING10BY10(num_episode=1000, gamma=0.95, epsilon=0.1, learning_rate=0.1)
     m.run()
-    #m.render_policy_table()
-    #m.render_first_shortest_episode()
+    m.render_policy_table()
+    m.render_first_shortest_episode()

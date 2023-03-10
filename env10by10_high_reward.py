@@ -186,7 +186,7 @@ def Env10by10():
     # Set the new reward values
     new_rewards = {
         b'H': -1,   # Hole
-        b'G': 1,   # Goal
+        b'G': 100,   # Goal
         b'F': 0,   # Frozen
         b'S': 0    # Start
     }

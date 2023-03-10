@@ -1,5 +1,6 @@
 import numpy as np
 import random
+import time
 from env4by4 import Env4by4
 
 # Create a x by y 2D-list
@@ -12,9 +13,9 @@ def create_x_by_y_table(x,y):
 
 class MCWOES4BY4:
      """
-     Init the MC control without ES class with input 
+     Init the MC control without ES class with small epsilon=0.1
      """
-     def __init__(self, num_episode, gamma, epsilon):
+     def __init__(self, num_episode=1000, gamma=0.95, epsilon=0.1):
           self.env = Env4by4()
           self.num_row = 4
           self.num_colomn = 4
@@ -33,6 +34,7 @@ class MCWOES4BY4:
           self.average_reward = 0 
           # Record all successful episodes index
           self.success_episode_index = []
+          self.training_time = 0
     
      """
      Init three tables: 
@@ -99,6 +101,7 @@ class MCWOES4BY4:
      Run function of iterating assigned number of episodes to update the policy table
      """
      def run(self):
+          start_time = time.time()
           # Initialize three tables: Policy, Q, Return
           self.init_table()
           # Create a reward list to collect reward from each episode
@@ -139,6 +142,9 @@ class MCWOES4BY4:
                          self.epsilon_greedy_policy(prime_action,state)
                # Put reward sum of each episode into the total reward list
                total_reward_list.append(np.sum(reward_list))
+          # Calculate the training time
+          self.training_time = time.time()-start_time
+          print("The training time is ", self.training_time, "s")          
           # Calculate the average reward for assigned number of episodes
           self.average_reward = np.average(total_reward_list)
           print("Average reward is",self.average_reward, "for total", self.num_episode, "episodes", )
@@ -195,7 +201,7 @@ class MCWOES4BY4:
           print(policy_table)
           
 if __name__ == '__main__': 
-     m = MCWOES4BY4(num_episode=1000, gamma=0.85, epsilon=0.1)
+     m = MCWOES4BY4(num_episode=1000, gamma=0.95, epsilon=0.1)
      m.run()
-     #m.render_policy_table()
-     #m.render_first_shortest_path()
+     m.render_policy_table()
+     m.render_first_shortest_path()

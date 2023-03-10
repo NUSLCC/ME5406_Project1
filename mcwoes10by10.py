@@ -14,7 +14,7 @@ class MCWOES10BY10:
      """
      Init the MC control without ES class with input 
      """
-     def __init__(self, num_episode, gamma, epsilon):
+     def __init__(self, num_episode=1000, gamma=0.95, epsilon=0.1):
           self.env = Env10by10()
           self.num_row = 10
           self.num_colomn = 10
@@ -196,5 +196,5 @@ class MCWOES10BY10:
 if __name__ == '__main__': 
      m = MCWOES10BY10(num_episode=1000, gamma=0.95, epsilon=0.5)
      m.run()
-     #m.render_policy_table()
-     #m.render_first_shortest_path()
+     m.render_policy_table()
+     m.render_first_shortest_path()

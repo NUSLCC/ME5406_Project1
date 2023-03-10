@@ -185,7 +185,7 @@ def Env10by10():
     env = FrozenLakeEnv()
     # Set the new reward values
     new_rewards = {
-        b'H': -1,   # Hole
+        b'H': -100,   # Hole
         b'G': 1,   # Goal
         b'F': 0,   # Frozen
         b'S': 0    # Start
