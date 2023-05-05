@@ -1,8 +1,8 @@
-#ME5406 Project 1
+# ME5406 Project 1
 
 This is the introduction of all the script and how you should build the test environment.
 
-##Build the environment
+## Build the environment
 First, this repository is under the python 3.6.10 so please make sure you have correct version installed.
 
 Then, please download Anaconda in your machine with this link: https://www.anaconda.com/products/distribution#download-section
