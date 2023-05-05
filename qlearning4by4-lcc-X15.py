@@ -1,82 +1,51 @@
 import numpy as np
 from env4by4 import Env4by4
-import time
 
-class SARSA4BY4:
+class QLEARNING4BY4:
     """
-    Init the SARSA class with input 
+    Init the Q-learning class with input 
     """
     def __init__(self, num_episode=1000, gamma=0.95, epsilon=0.1, learning_rate=0.1):
-        # Use the adjusted 4 by 4 environment of frozen lake
         self.env = Env4by4()
         self.num_row = 4
         self.num_colomn = 4
-        # Set alias of the number of states and actions
         self.n_states = self.env.observation_space.n
         self.n_actions = self.env.action_space.n
-        # Set the number of episode
         self.num_episode = num_episode
-        # Set the gamma (discount)
         self.gamma = gamma
-        # Set the epsilon (probability)
         self.epsilon = epsilon
-        # Set the alpha
         self.learning_rate = learning_rate
-        # Create empty dictionary for policy and Q value
-        self.P_table = {}
         self.Q_table = {}
-        self.action_total = []
-        # In this environment, directions are a bit different
         self.action_map={0:"left", 1:"down", 2:"right", 3:"up"}
-        # Empty list to store first shortest episode
+        self.action_total = []
         self.first_shortest_episode = []
-        # Use this flag to check the training is enough or not
         self.training_enough = False
-        # Average reward for this round
-        self.average_reward = 0 
+        self.average_reward = 0
         self.success_episode_index=[]
-        self.training_time = 0
     
     """
     Init two tables: 
-    Policy table with average probability for each action at each state
+    policy table with average probability for each action at each state
     Q table with all zero for each action at each state
     """
     def init_table(self):
         for state in range(self.n_states):
-            self.P_table[state] = [1/self.n_actions] * self.n_actions
             self.Q_table[state] = [np.random.rand() * 0.01] * self.n_actions
 
     """
-    Epislon greedy policy for choosing the prime action
+    Epislon greedy policy for choosing the action
     """     
     def epsilon_greedy_policy(self, state):
-        # With probability less than epsilon, a random action will be selected
         if np.random.uniform(0, 1) < self.epsilon:
             action = self.env.action_space.sample()
-        # Otherwise, choose the action with the highest Q value at this state
         else:
             action = np.argmax(self.Q_table[state])
         return action
-    
+
     """
-    Update the policy table with epsilon greedy policy
-    """
-    def update_policy_table(self, state):
-        # Get prime action with the max Q value at specific state
-        prime_action = np.argmax(self.Q_table[state])
-        # Set probability (epsilon/num_of_actions) to each action first
-        policy = np.ones(self.n_actions, dtype=float) * self.epsilon / self.n_actions
-        # Update the prime action's probability to 1-epsilon+epsilon/num_of_actions
-        policy[prime_action] = 1 - self.epsilon + policy[prime_action]
-        # Update the policy table with probabilty of each action at current state
-        self.P_table[state] = policy
-    
-    """
-    Run function for iterating assigned number of episodes by using same policy
+    Run function for iterating assigned number of episodes by using max Q value as the Q prime
     """ 
     def run(self):
-        start_time = time.time()
         # Initialize two tables
         self.init_table()
         # Create a reward list to collect reward from each episode
@@ -89,8 +58,6 @@ class SARSA4BY4:
         for epo in range(self.num_episode):
             # Initialize state to start position
             state = self.env.reset()
-            # Choose action from state using policy derived from Q (epsilon-greedy)
-            action = self.epsilon_greedy_policy(state)
             # Create the action list for each episode
             action_list = []
             # Collect the total reward in each episode
@@ -99,24 +66,21 @@ class SARSA4BY4:
             terminated = False
             # Loop for each step of episode
             while not terminated:
-                # Add the first action by epsilon greedy policy to the action list
-                action_list.append(action)
+                # Choose action from state using policy derived from Q (epsilon-greedy)
+                action = self.epsilon_greedy_policy(state)
                 # Take action, receive reward and observe the next state
                 next_state, reward, terminated, _ = self.env.step(action)
                 # Collect reward in total for each episode
                 reward_total += reward
-                # Choose next action from next state using policy derived from Q (epsilon-greedy)
-                next_action = self.epsilon_greedy_policy(next_state)
-                # Here is the difference between SARSA & Q-learning
-                # SARSA use the Q value of next state's next action as the Q prime
-                Q_prime = self.Q_table[next_state][next_action]
+                # That is the difference between SARSA & Q-learning
+                # Q-learning use the max Q value of new state as the Q prime
+                Q_prime = np.max(self.Q_table[next_state])
                 # Update the Q table with this Q prime
                 self.Q_table[state][action] += self.learning_rate * (reward + self.gamma * Q_prime - self.Q_table[state][action])
-                # Update the P table
-                self.update_policy_table(state)
                 # Update the state
                 state = next_state
-                action = next_action
+                # Add each action in this episode into the action list
+                action_list.append(action)
                 # Check whether it reaches the goal state
                 if (next_state == self.n_states-1):
                     self.success_episode_index.append((epo+1))
@@ -124,12 +88,9 @@ class SARSA4BY4:
                     #print("Successful in No.", str(epo+1),"episode")
             # Put reward sum of each episode into the total reward list
             total_reward_list.append(reward_total)
-        # Calculate the training time
-        self.training_time = time.time()-start_time
-        print("The training time is ", self.training_time, "s")
         # Calculate the average reward for assigned number of episodes
         self.average_reward = np.average(total_reward_list)
-        print("Average reward is",self.average_reward, "for total", self.num_episode, "episodes", )
+        print("Average reward is",self.average_reward, "for total", self.num_episode, "episodes")
         # Check whether training is enough by checking the length of successful episode index
         if(len(self.success_episode_index)==0):
             self.training_enough=False
@@ -142,7 +103,7 @@ class SARSA4BY4:
     """
     Render the policy by a long string with four lines
     """ 
-    def render_optimal_policy(self):
+    def render_policy_table(self):
         if not self.training_enough:
             print("Training is not enough, reder policy table fails")
             return
@@ -155,10 +116,8 @@ class SARSA4BY4:
         policy_table = ""
         for state in range(self.n_states):
             action = optimal_policy[state]
-            # Change character H to Hole
             if self.env.desc.flatten()[state] == b'H':
                 policy_table += "Hole   "
-            # Change character G to Goal
             elif self.env.desc.flatten()[state] == b'G':
                 policy_table += "Goal   "
             else:
@@ -176,21 +135,18 @@ class SARSA4BY4:
         if not self.training_enough:
             print("Training is not enough, reder first shortest fails")
             return
-        # min() will return the first shortest episode with its action list
         self.first_shortest_episode = min(self.action_total, key=len)
-        print("First shortest path with",len(self.first_shortest_episode),
-              "steps in total:", [self.action_map[a] for a in self.first_shortest_episode])
-        # Reset the agent to the start pose
-        self.env.reset()
-        self.env.render()
-        # render this episode by default rendering function
-        for each_step in self.first_shortest_episode:
-            self.env.step(each_step)
-            self.env.render()
-        return
-
+        print("First shortest path with",len(self.first_shortest_episode),"steps in total:", 
+              [self.action_map[a] for a in self.first_shortest_episode])
+        # self.env.reset()
+        # self.env.render()
+        # for each_step in self.first_shortest_episode:
+        #     self.env.step(each_step)
+        #     self.env.render()
+        # return
+        
 if __name__ == '__main__': 
-    m = SARSA4BY4(num_episode=1000, gamma=0.95, epsilon=0.1, learning_rate=0.1)
+    m = QLEARNING4BY4(num_episode=1000, gamma=0.95, epsilon=0.1, learning_rate=0.1)
     m.run()
-    m.render_optimal_policy()
-    m.render_first_shortest_episode()
+    #m.render_policy_table()
+    #m.render_first_shortest_episode()

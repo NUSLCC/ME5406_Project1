@@ -1,6 +1,6 @@
 import numpy as np
 import random
-from env10by10 import Env10by10
+from env4by4 import Env4by4
 
 # Create a x by y 2D-list
 def create_x_by_y_table(x,y):
@@ -10,14 +10,14 @@ def create_x_by_y_table(x,y):
           output_list.append(row)
      return output_list
 
-class MCWOES10BY10:
+class MCWOES4BY4:
      """
-     Init the MC control without ES class with input 
+     Init the MC control without ES class with small epsilon=0.1
      """
      def __init__(self, num_episode=1000, gamma=0.95, epsilon=0.1):
-          self.env = Env10by10()
-          self.num_row = 10
-          self.num_colomn = 10
+          self.env = Env4by4()
+          self.num_row = 4
+          self.num_colomn = 4
           self.n_states = self.env.observation_space.n
           self.n_actions = self.env.action_space.n
           self.num_episode = num_episode
@@ -31,6 +31,7 @@ class MCWOES10BY10:
           self.training_enough = False
           # Average reward for this round
           self.average_reward = 0 
+          # Record all successful episodes index
           self.success_episode_index = []
     
      """
@@ -51,16 +52,6 @@ class MCWOES10BY10:
                self.R_table[state] = {}
                for action in range(self.n_actions):
                     self.R_table[state][action] = []
-
-     """
-     Epislon greedy policy for updating the policy table
-     """ 
-     def epsilon_greedy_policy(self, prime_action, state):
-          for action in range(self.n_actions):
-               if action==prime_action:
-                    self.P_table[state][action] = 1 - self.epsilon + self.epsilon / self.n_actions
-               else:
-                    self.P_table[state][action] = self.epsilon / self.n_actions
 
      """
      Function to generate random episode with reversed accumulated G as return table 
@@ -93,7 +84,17 @@ class MCWOES10BY10:
                return_list.append(G)
           return_list.reverse()
           return state_list, action_list, reward_list, return_list, result
-     
+
+     """
+     Epislon greedy policy for updating the policy table
+     """ 
+     def epsilon_greedy_policy(self, prime_action, state):
+          for action in range(self.n_actions):
+               if action==prime_action:
+                    self.P_table[state][action] = 1 - self.epsilon + self.epsilon / self.n_actions
+               else:
+                    self.P_table[state][action] = self.epsilon / self.n_actions
+
      """
      Run function of iterating assigned number of episodes to update the policy table
      """
@@ -194,7 +195,7 @@ class MCWOES10BY10:
           print(policy_table)
           
 if __name__ == '__main__': 
-     m = MCWOES10BY10(num_episode=1000, gamma=0.95, epsilon=0.5)
+     m = MCWOES4BY4(num_episode=1000, gamma=0.95, epsilon=0.1)
      m.run()
-     m.render_policy_table()
-     m.render_first_shortest_path()
+     #m.render_policy_table()
+     #m.render_first_shortest_path()
